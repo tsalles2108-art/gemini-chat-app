@@ -1,74 +1,77 @@
-// Substitua a sua função sendMessage por esta versão atualizada:
-async function sendMessage() {
-    const text = userInput.value.trim();
-    const fileInput = document.getElementById('file-input'); // Captura o input de arquivo
-    const file = fileInput ? fileInput.files[0] : null;      // Pega o primeiro arquivo selecionado (se houver)
+<script>
+    // Função atualizada para envio de mensagens e arquivos
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        const fileInput = document.getElementById('file-input'); // Captura o input de arquivo
+        const file = fileInput ? fileInput.files[0] : null;      // Pega o primeiro arquivo selecionado (se houver)
 
-    // Se não tiver texto E nem arquivo, não faz nada
-    if (!text && !file) return;
+        // Se não tiver texto E nem arquivo, não faz nada
+        if (!text && !file) return;
 
-    // Prepara o conteúdo visual que o usuário vai ver no balão do chat
-    let userDisplay = text;
-    if (file) {
-        userDisplay += `<br><small style="color: #66ffbb;">📁 [Arquivo: ${file.name}]</small>`;
-    }
-
-    // Adiciona a mensagem do usuário na tela usando innerHTML para renderizar a tag do arquivo se houver
-    const userMessageDiv = appendMessage('', 'user-message');
-    userMessageDiv.innerHTML = userDisplay;
-
-    // Limpa os campos de texto e arquivo imediatamente
-    userInput.value = '';
-    if (fileInput) fileInput.value = '';
-    const filePreview = document.getElementById('file-preview');
-    if (filePreview) filePreview.style.display = 'none';
-
-    const botMessageDiv = appendMessage('Processando arquivo e pensando...', 'gemini-message');
-
-    // IMPORTANTE: Para enviar arquivos, usamos FormData no lugar de JSON puro
-    const formData = new FormData();
-    if (text) formData.append('message', text);
-    if (file) formData.append('file', file); // O backend vai procurar por esse nome 'file'
-
-    try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            body: formData // Nota: NÃO colocamos 'headers' aqui. O navegador define o Content-Type automaticamente para multipart/form-data
-        });
-
-        const data = await response.json();
-        
-        let formattedResponse = data.response || "Sem resposta do servidor.";
-        formattedResponse = formattedResponse
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br>');
-
-        botMessageDiv.innerHTML = formattedResponse;
-    } catch (error) {
-        botMessageDiv.innerText = "Erro ao conectar com o servidor.";
-        console.error(error);
-    }
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Sua função appendMessage pode continuar exatamente igual:
-function appendMessage(text, className) {
-    const div = document.createElement('div');
-    div.className = `message ${className}`;
-    div.innerText = text; 
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return div;
-}
-// Monitora quando o usuário escolhe um arquivo para mostrar o nome na tela
-document.getElementById('file-input')?.addEventListener('change', function() {
-    const preview = document.getElementById('file-preview');
-    if (preview) {
-        if (this.files.length > 0) {
-            preview.innerText = `Arquivo anexado: ${this.files[0].name}`;
-            preview.style.display = 'block';
-        } else {
-            preview.style.display = 'none';
+        // Prepara o conteúdo visual que o usuário vai ver no balão do chat
+        let userDisplay = text;
+        if (file) {
+            userDisplay += `<br><small style="color: #66ffbb;">📁 [Arquivo: ${file.name}]</small>`;
         }
+
+        // Adiciona a mensagem do usuário na tela usando innerHTML para renderizar a tag do arquivo se houver
+        const userMessageDiv = appendMessage('', 'user-message');
+        userMessageDiv.innerHTML = userDisplay;
+
+        // Limpa os campos de texto e arquivo imediatamente
+        userInput.value = '';
+        if (fileInput) fileInput.value = '';
+        const filePreview = document.getElementById('file-preview');
+        if (filePreview) filePreview.style.display = 'none';
+
+        const botMessageDiv = appendMessage('Processando arquivo e pensando...', 'gemini-message');
+
+        // IMPORTANTE: Para enviar arquivos, usamos FormData no lugar de JSON puro
+        const formData = new FormData();
+        if (text) formData.append('message', text);
+        if (file) formData.append('file', file); // O backend vai procurar por esse nome 'file'
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                body: formData // Nota: NÃO colocamos 'headers' aqui. O navegador define o Content-Type automaticamente para multipart/form-data
+            });
+
+            const data = await response.json();
+            
+            let formattedResponse = data.response || "Sem resposta do servidor.";
+            formattedResponse = formattedResponse
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            botMessageDiv.innerHTML = formattedResponse;
+        } catch (error) {
+            botMessageDiv.innerText = "Erro ao conectar com o servidor.";
+            console.error(error);
+        }
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-});
+
+    // Função auxiliar para renderizar as mensagens na tela
+    function appendMessage(text, className) {
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.innerText = text; 
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return div;
+    }
+
+    // Monitora quando o usuário escolhe um arquivo para mostrar o nome na tela antes do envio
+    document.getElementById('file-input')?.addEventListener('change', function() {
+        const preview = document.getElementById('file-preview');
+        if (preview) {
+            if (this.files.length > 0) {
+                preview.innerText = `Arquivo anexado: ${this.files[0].name}`;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    });
+</script>
