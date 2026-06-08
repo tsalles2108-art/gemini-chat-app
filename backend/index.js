@@ -42,7 +42,6 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor integrado rodando na porta ${PORT}`);
 });
-"multer": "^1.4.5-lts.1"
 const express = require('express');
 const multer = require('multer');
 const { GoogleGenAI } = require('@google/genai');
