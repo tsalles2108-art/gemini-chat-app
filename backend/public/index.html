@@ -1,27 +1,47 @@
-// Substitua a função sendMessage existente por esta para tratar a resposta:
+// Substitua a sua função sendMessage por esta versão atualizada:
 async function sendMessage() {
     const text = userInput.value.trim();
-    if (!text) return;
+    const fileInput = document.getElementById('file-input'); // Captura o input de arquivo
+    const file = fileInput ? fileInput.files[0] : null;      // Pega o primeiro arquivo selecionado (se houver)
 
-    appendMessage(text, 'user-message');
+    // Se não tiver texto E nem arquivo, não faz nada
+    if (!text && !file) return;
+
+    // Prepara o conteúdo visual que o usuário vai ver no balão do chat
+    let userDisplay = text;
+    if (file) {
+        userDisplay += `<br><small style="color: #66ffbb;">📁 [Arquivo: ${file.name}]</small>`;
+    }
+
+    // Adiciona a mensagem do usuário na tela usando innerHTML para renderizar a tag do arquivo se houver
+    const userMessageDiv = appendMessage('', 'user-message');
+    userMessageDiv.innerHTML = userDisplay;
+
+    // Limpa os campos de texto e arquivo imediatamente
     userInput.value = '';
+    if (fileInput) fileInput.value = '';
+    const filePreview = document.getElementById('file-preview');
+    if (filePreview) filePreview.style.display = 'none';
 
-    const botMessageDiv = appendMessage('Pensando...', 'gemini-message');
+    const botMessageDiv = appendMessage('Processando arquivo e pensando...', 'gemini-message');
+
+    // IMPORTANTE: Para enviar arquivos, usamos FormData no lugar de JSON puro
+    const formData = new FormData();
+    if (text) formData.append('message', text);
+    if (file) formData.append('file', file); // O backend vai procurar por esse nome 'file'
 
     try {
         const response = await fetch('/api/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text })
+            body: formData // Nota: NÃO colocamos 'headers' aqui. O navegador define o Content-Type automaticamente para multipart/form-data
         });
 
         const data = await response.json();
         
-        // Converte as quebras de linha e os negritos (**texto**) em HTML real
         let formattedResponse = data.response || "Sem resposta do servidor.";
         formattedResponse = formattedResponse
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforma ** em bold
-            .replace(/\n/g, '<br>'); // Transforma quebras de linha em <br>
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
 
         botMessageDiv.innerHTML = formattedResponse;
     } catch (error) {
@@ -31,11 +51,11 @@ async function sendMessage() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// E ajuste a appendMessage para criar os elementos vazios primeiro:
+// Sua função appendMessage pode continuar exatamente igual:
 function appendMessage(text, className) {
     const div = document.createElement('div');
     div.className = `message ${className}`;
-    div.innerText = text; // Define como texto puro inicialmente (segurança)
+    div.innerText = text; 
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return div;
