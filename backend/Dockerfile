@@ -2,13 +2,13 @@ FROM node:18
 
 WORKDIR /app
 
-# Avisamos o Docker para copiar o package.json de dentro da pasta backend
-COPY backend/package*.json ./
+# Copia o package.json do diretório atual onde o Render está olhando
+COPY package*.json ./
 
 RUN npm install
 
-# Copiamos todo o conteúdo da pasta backend para o contêiner
-COPY backend/ .
+# Copia todos os arquivos do diretório atual para dentro do contêiner
+COPY . .
 
 EXPOSE 10000
 
