@@ -60,3 +60,15 @@ function appendMessage(text, className) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return div;
 }
+// Monitora quando o usuário escolhe um arquivo para mostrar o nome na tela
+document.getElementById('file-input')?.addEventListener('change', function() {
+    const preview = document.getElementById('file-preview');
+    if (preview) {
+        if (this.files.length > 0) {
+            preview.innerText = `Arquivo anexado: ${this.files[0].name}`;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+});
